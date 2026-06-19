@@ -17,4 +17,4 @@ Four local SVG placeholders live in `public/images/events/`. Each event gets two
 Visual listings default to `published` events only, paginate 24 per page, and use a composite index on `(status, created_time)`. Payload formatting happens in `EventVisualResource` per page, not for the entire dataset.
 
 ## Attendees & email
-Registration is open (no auth). Confirmation emails are queued on signup. Reminders run hourly via `events:send-reminders`, matching events starting in 3-day and 24-hour windows; `reminder_*_sent_at` columns prevent duplicates. Mail defaults to the `log` driver locally — check `storage/logs/laravel.log`.
+Registration is open for published events only (no auth). Confirmation emails are queued on signup. Reminders run hourly via `events:send-reminders`, using `EventFormatter::startsAt()` with catch-up windows (3-day reminders for events 1–3 days out; 24-hour reminders within the next day). Reminder flags are set inside `SendEventReminder` after the email sends. Mail defaults to the `log` driver locally — check `storage/logs/laravel.log`.

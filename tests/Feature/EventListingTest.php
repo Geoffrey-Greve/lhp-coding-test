@@ -2,13 +2,11 @@
 
 use App\Jobs\SendAttendanceConfirmation;
 use App\Jobs\SendEventReminder;
-use App\Mail\EventReminder;
 use App\Models\Event;
 use App\Models\EventAttendee;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
@@ -132,7 +130,7 @@ it('registers an attendee and queues a confirmation email', function () {
 });
 
 it('sends reminder emails for events in the reminder window', function () {
-    Mail::fake();
+    Queue::fake();
 
     $user = User::factory()->create();
     $startsAt = now()->addDays(3)->addMinutes(30)->timestamp;
@@ -155,8 +153,27 @@ it('sends reminder emails for events in the reminder window', function () {
 
     Artisan::call('events:send-reminders');
 
-    Mail::assertQueued(EventReminder::class, function (EventReminder $mail) {
-        return $mail->reminderLabel === '3 days'
-            && $mail->attendee->email === 'pat@example.test';
+    Queue::assertPushed(SendEventReminder::class, function (SendEventReminder $job) {
+        return $job->reminderLabel === '3 days'
+            && $job->reminderColumn === 'reminder_3d_sent_at'
+            && $job->attendee->email === 'pat@example.test';
     });
+});
+
+it('rejects registration for non-published events', function () {
+    Queue::fake();
+    $user = User::factory()->create();
+    $event = Event::factory()->for($user)->create(['status' => 'cancelled']);
+
+    $this->post(route('events.attendees.store', $event), [
+        'name' => 'Taylor Swift',
+        'email' => 'taylor@example.test',
+    ])->assertRedirect();
+
+    $this->assertDatabaseMissing('event_attendees', [
+        'event_id' => $event->id,
+        'email' => 'taylor@example.test',
+    ]);
+
+    Queue::assertNothingPushed();
 });
