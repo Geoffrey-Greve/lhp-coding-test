@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Event;
 use App\Models\User;
+use App\Services\EventImageAssigner;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,6 +30,7 @@ class EventFactory extends Factory
             'longitude' => $lng,
             'payload' => [
                 'name' => ucwords(fake()->words(3, true)),
+                'description' => fake()->sentence(12),
                 'category' => $type,
                 'venue' => ['name' => fake()->company(), 'capacity' => fake()->numberBetween(20, 50000)],
                 'location' => ['lat' => $lat, 'lng' => $lng],
@@ -36,5 +38,12 @@ class EventFactory extends Factory
                 'pricing' => ['currency' => 'USD', 'min_price' => fake()->randomFloat(2, 0, 250)],
             ],
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Event $event) {
+            app(EventImageAssigner::class)->assignForEvent($event);
+        });
     }
 }

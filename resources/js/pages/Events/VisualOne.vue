@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import EventVisualShell from '@/components/events/EventVisualShell.vue';
+import type { CityOption, VisualFilters } from '@/types/events';
+
+defineProps<{
+    filters: VisualFilters;
+    cities: CityOption[];
+}>();
 </script>
 
 <template>
     <Head title="Events Visual 1" />
 
-    <div class="flex h-full flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-        <h1 class="text-2xl font-semibold">Events Visual 1</h1>
-    </div>
+    <EventVisualShell
+        :filters="filters"
+        :cities="cities"
+        title="Event Visuals — Gallery"
+        subtitle="Browse upcoming events in a card grid with image previews"
+    />
 </template>

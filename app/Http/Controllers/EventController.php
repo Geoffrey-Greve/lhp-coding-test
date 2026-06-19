@@ -35,15 +35,6 @@ class EventController extends Controller
         ]);
     }
 
-    public function show(Event $event): Response
-    {
-        $event->load('user');
-
-        return Inertia::render('Events/Show', [
-            'event' => $event,
-        ]);
-    }
-
     /**
      * @return array{0: LengthAwarePaginator, 1: array{ms: int, bytes: int}}
      */
