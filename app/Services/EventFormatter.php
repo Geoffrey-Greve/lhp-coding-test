@@ -51,10 +51,15 @@ class EventFormatter
             ];
         }
 
-        $lat = $event->latitude ?? 0.0;
-        $lng = $event->longitude ?? 0.0;
-        $city = $this->locationResolver->nearestCity($lat, $lng);
-        $timezone = $city['timezone'];
+        $lat = $event->latitude;
+        $lng = $event->longitude;
+
+        if ($lat === null || $lng === null) {
+            $timezone = 'UTC';
+        } else {
+            $city = $this->locationResolver->nearestCity($lat, $lng);
+            $timezone = $city['timezone'];
+        }
 
         $eventTime = Carbon::createFromTimestampUTC($startsAt)->setTimezone($timezone);
         $viewerTime = Carbon::createFromTimestampUTC($startsAt)->setTimezone($this->viewerTimezone());

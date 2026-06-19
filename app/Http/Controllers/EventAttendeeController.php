@@ -15,6 +15,15 @@ class EventAttendeeController extends Controller
 {
     public function store(Request $request, Event $event): RedirectResponse
     {
+        if ($event->status !== 'published') {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Registration is only open for published events.',
+            ]);
+
+            return back();
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255'],
@@ -36,7 +45,10 @@ class EventAttendeeController extends Controller
             ? "You're on the list! Check your inbox for confirmation."
             : "You're already registered for this event.";
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
+        Inertia::flash('toast', [
+            'type' => $attendee->wasRecentlyCreated ? 'success' : 'info',
+            'message' => $message,
+        ]);
 
         return back();
     }

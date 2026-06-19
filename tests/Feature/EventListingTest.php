@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\SendAttendanceConfirmation;
+use App\Jobs\SendEventReminder;
 use App\Mail\EventReminder;
 use App\Models\Event;
 use App\Models\EventAttendee;

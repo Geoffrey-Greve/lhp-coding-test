@@ -11,9 +11,13 @@ defineProps<{
 }>();
 
 function dayKey(event: VisualEvent): string {
+    if (event.schedule.iso) {
+        return event.schedule.iso.slice(0, 10);
+    }
+
     if (!event.starts_at) {
-return 'unknown';
-}
+        return 'unknown';
+    }
 
     return new Date(event.starts_at * 1000).toISOString().slice(0, 10);
 }
@@ -51,7 +55,7 @@ function groupEvents(events: VisualEvent[]) {
         title="Event Visuals — Timeline"
         subtitle="Follow events chronologically along a vertical schedule"
     >
-        <template #content="{ events, loading, hasLoadedOnce }">
+        <template #content="{ events, loading, hasLoadedOnce, loadError }">
             <div v-if="events.length > 0" class="relative mx-auto max-w-3xl">
                 <div class="absolute bottom-0 left-4 top-0 w-px bg-border md:left-1/2" />
 
@@ -130,7 +134,7 @@ function groupEvents(events: VisualEvent[]) {
             </div>
 
             <p
-                v-else-if="!loading && hasLoadedOnce"
+                v-else-if="!loading && hasLoadedOnce && !loadError"
                 class="py-16 text-center text-muted-foreground"
             >
                 No events on the timeline for these filters.
